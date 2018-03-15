@@ -5,15 +5,17 @@
     name: "{{nessus_agent_package}}"
     update_cache: yes
     cache_valid_time: "{{apt_cache_valid_time | default (3600)}}"
+  become: true
   when: "'.deb' not in nessus_agent_package"
 
 - name: Install Nessus Agent from .deb package
   apt: deb={{nessus_agent_package}}
+  become: true
   when: "'.deb' in nessus_agent_package"
 
 - name: Check agent link status
   command: /opt/nessus_agent/sbin/nessuscli agent status
-  become: yes
+  become: true
   ignore_errors: yes
   register: nessus_link
 
@@ -24,8 +26,8 @@
       --host={{nessus_agent_host}}
       --port={{nessus_agent_port}}
       --groups="{{nessus_agent_group}}"
-  become: yes
-  when: nessus_link|failed
+  become: true
+  when: nessus_link is failed
   notify: restart nessusagent
 
 - name: Ensure nessusagent is started
@@ -33,3 +35,4 @@
     name: nessusagent
     state: started
     enabled: yes
+  become: true
